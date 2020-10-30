@@ -12,4 +12,8 @@ $env["X-ROUTE-PREFIX"] = "";
 $env["X-LAYER-UID"] = "";
 $env["X-SPACE-ID"] = "";
 
+/* Set auth params */
+if (!isset($env["AUTH_PRIVATE_KEY"])) $env["AUTH_PRIVATE_KEY"] = file_get_contents("/run/secrets/AUTH_PRIVATE_KEY");
+if (!isset($env["AUTH_PUBLIC_KEY"])) $env["AUTH_PUBLIC_KEY"] = file_get_contents("/run/secrets/AUTH_PUBLIC_KEY");
+
 return $env;

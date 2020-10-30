@@ -1,5 +1,5 @@
 {
-	"name": "Time planner",
+	"name": "Bayrell CloudOS Installer",
 	"cache": "var/bundler",
 	"assets": "assets/",
 	"bundles":
@@ -12,23 +12,9 @@
 			[
 				"Runtime",
 				"Runtime.Core",
-				"Runtime.Web"
-			]
-		},
-		{
-			"name": "components",
-			"dest": "assets/components.js",
-			"lang": "es6",
-			"modules":
-			[
-				"Runtime.Web.Auth",
-				"Runtime.Web.Dialog",
-				"Runtime.Web.Form",
+				"Runtime.Web",
 				"Runtime.Web.Input",
-				"Runtime.Web.Table",
-				"Runtime.Web.CRUD",
-				"Runtime.Components.jQuery",
-				"Runtime.Components.AirDatepicker"
+				"Runtime.Web.Auth"
 			]
 		},
 		{
@@ -37,8 +23,7 @@
 			"lang": "css",
 			"modules":
 			[
-				"Runtime.Web",
-				"Runtime.Components.AirDatepicker"
+				"Runtime.Web"
 			]
 		},
 		{
@@ -47,24 +32,13 @@
 			"lang": "es6",
 			"modules":
 			[
-				"Bayrell.TimePlanner"
-			],
-			"websocket": true
-		},
-		{
-			"name": "html_admin_service",
-			"dest": "html_admin_service/app.js",
-			"lang": "es6",
-			"modules":
-			[
-				"Bayrell.TimePlanner.AdminService"
+				"Bayrell.CloudOS.Installer"
 			],
 			"websocket": true
 		}
 	],
 	"modules":
 	[
-		"admin/",
 		"app/",
 		"lib/"
 	],

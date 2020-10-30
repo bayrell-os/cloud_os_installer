@@ -1,0 +1,97 @@
+/*!
+ *  Bayrell Cloud OS
+ *
+ *  (c) Copyright 2020 "Ildar Bikmamatov" <support@bayrell.org>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+namespace Bayrell.CloudOS.Installer.Backend;
+
+use Runtime.lib;
+use Runtime.Exceptions.ApiException;
+use Runtime.Crypt.HASH;
+use Runtime.Core.RemoteCallAnswer;
+use Runtime.Core.RemoteCallRequest;
+use Runtime.Web.Cookie;
+use Runtime.Web.Layout;
+use Runtime.Web.LayoutModel;
+use Runtime.Web.RenderContainer;
+use Runtime.Web.Auth.AuthToken;
+
+
+static class Helper
+{
+
+	/**
+	 * Render chain. Route after
+	 */
+	pure RenderContainer renderChainRouteAfter(RenderContainer container)
+	{
+		if (container.layout.layout_name == "admin")
+		{
+		}
+		
+		return [ container ];
+	}
+	
+	
+	
+	/**
+	 * Check token
+	 */
+	async list chainCheckToken(RenderContainer container, AuthToken token)
+	{
+		/* Set auth settings */
+		container <= layout <= tz <= "GMT+6";
+		
+		return [ container, token ];
+	}
+	
+	
+	
+	/**
+	 * Login
+	 */
+	async list chainLogin(string username, string password, AuthToken token)
+	{
+		if (token != null) return [ username, password, token ];
+		
+		if (username == @.env("CLOUD_LOGIN_ADMIN") and username == @.env("CLOUD_LOGIN_PASSWORD"))
+		{
+			/* Create token */
+			int cookie_expire = @.config(["Runtime.Web.Auth", "COOKIE_EXPIRE"]) |> default int 3600;
+			int time = rtl::time();
+			token = new AuthToken
+			{
+				"created": time,
+				"expire": time + cookie_expire,
+				"user_id": 1,
+				"login": username,
+			}
+		}
+		
+		return [ username, password, token ];
+	}
+	
+	
+	
+	/**
+	 * Logout
+	 */
+	async list chainLogout(AuthToken token)
+	{
+		return [ token ];
+	}
+	
+}

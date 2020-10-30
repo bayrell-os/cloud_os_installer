@@ -30,8 +30,8 @@ services:
             MYSQL_USERNAME: "lasto4ka"
             MYSQL_PASSWORD: "7DF&d7jr!Lk5rZ^b"
             MYSQL_DB: "time_planner"
-            COOKIE_NAME: installer_auth_token
-            COOKIE_EXPIRE: 86400
+            AUTH_COOKIE_NAME: installer_auth_token
+            AUTH_COOKIE_EXPIRE: 86400
         deploy:
             replicas: 1
             endpoint_mode: dnsrr

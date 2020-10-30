@@ -1,0 +1,13 @@
+{
+	"name": "Bayrell.CloudOS.Installer",
+	"assets":
+	[
+		"AdminerPage",
+		"AdminLayout",
+		"DefaultLayout",
+		"MainPage",
+		"Page404",
+		"Routes",
+		"ModuleDescription"
+	]
+}

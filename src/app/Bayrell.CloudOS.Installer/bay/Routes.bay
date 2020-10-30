@@ -1,0 +1,218 @@
+/*!
+ *  Bayrell Cloud OS
+ *
+ *  (c) Copyright 2020 "Ildar Bikmamatov" <support@bayrell.org>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+namespace Bayrell.CloudOS.Installer;
+
+use Runtime.Core.RemoteCallAnswer;
+use Runtime.ORM.MySQL.Settings as MySQLSettings;
+use Runtime.Web.Layout;
+use Runtime.Web.LayoutModel;
+use Runtime.Web.RenderContainer;
+use Runtime.Web.RenderDriver;
+use Runtime.Web.Response;
+use Runtime.Web.Route;
+use Runtime.Web.RouteList;
+use Runtime.Web.RouteMiddleware;
+use Runtime.Web.Auth.AuthToken;
+use Runtime.Web.CRUD.CrudPageModel;
+use Runtime.Web.Table.TableModel;
+use Bayrell.CloudOS.Installer.AdminerPage;
+use Bayrell.CloudOS.Installer.AdminLayout;
+use Bayrell.CloudOS.Installer.DefaultLayout;
+use Bayrell.CloudOS.Installer.Page404;
+use Bayrell.CloudOS.Installer.Pattern;
+
+
+@RouteList{}
+static class Routes
+{
+	
+	/**
+	 * Layout chain
+	 */
+	pure LayoutModel layoutChain(LayoutModel layout)
+	{
+		if (layout.layout_name == "default") layout <= layout_class <= classof DefaultLayout;
+		if (layout.layout_name == "admin") layout <= layout_class <= classof AdminLayout;
+		return [ layout ];
+	}
+	
+	
+	
+	/**
+	 * Render chain. Set default pattern
+	 */
+	pure RenderContainer renderChainPatternDefault(RenderContainer container)
+	{
+		if (container.pattern_name == "default" and container.pattern_class == "" or container.pattern_class == "")
+		{
+			container <= pattern_class <= classof Pattern;
+		}
+		return [ container ];
+	}
+	
+	
+	
+	/**
+	 * Title chain
+	 */
+	pure RenderContainer titleChain(LayoutModel layout, string title)
+	{
+		title = title ~ " | Bayrell Cloud OS";
+		return [ layout, title ];
+	}
+	
+	
+	
+	/**
+	 * Render chain
+	 * Page not found
+	 * @return RenderContainer
+	 */
+	static async RenderContainer Page404(RenderContainer container)
+	{
+		if (container == null or container.isResponseExists() or container.isPageExists()) return [ container ];
+		
+		/* Set title */
+		container <= layout <= title <= "Page not found";
+		container <= layout <= layout_name <= "default";
+		
+		/* Set model */
+		container <= layout <= page_class <= classof Page404;
+		container <= layout <= page_model <= null;
+		
+		/* Set 404 code */
+		container <= new_http_code <= 404;
+		
+		/* Set admin page if login */
+		AuthToken auth_token = container.layout.keep_data[classof AuthToken] |> default AuthToken null;
+		if (auth_token)
+		{
+			container <= layout <= layout_name <= "admin";
+		}
+		
+		return [ container ];
+	}
+	
+	
+	
+	#ifdef BACKEND then
+	
+	/**
+	 * Route Action
+	 * @return WebContainer
+	 */
+	@Route{ "uri": "/admin/database/", "name": "app.admin.database" }
+	@RouteMiddleware{ "value": "Runtime.Web.Auth.AuthFrontend::checkAuthMiddleware" }
+	static async RenderContainer adminerPage(RenderContainer container)
+	{
+		MySQLSettings settings = @.config(["Runtime.ORM.MySQL", "default"]);
+		
+		/* Set title */
+		container <= layout <= title <= "Admin database";
+		
+		/* Create model */
+		container <= layout <= page_class <= classof AdminerPage;
+		container <= layout <= page_model <= new Dict
+		{
+			"db": settings.toDict(),
+		};
+		
+		return [ container ];
+	}
+	
+	
+	
+	/**
+	 * Route Action
+	 * @return WebContainer
+	 */
+	@Route{ "uri": "/admin/env/", "name": "app.admin.env" }
+	@RouteMiddleware{ "value": "Runtime.Web.Auth.AuthFrontend::checkAuthMiddleware" }
+	static async RenderContainer adminerEnvPage(RenderContainer container)
+	{
+		string content = "";
+		Dict env = @.enviroments;
+		
+		#ifcode PHP then
+		@ob_start();
+		echo "<pre>";
+		var_dump($env);
+		echo "</pre>";
+		$content = ob_get_contents();
+		@ob_end_clean();
+		#endif
+		
+		container <= response <= new Response{ "content": content };
+		
+		return [ container ];
+	}
+	
+	
+	
+	/**
+	 * Route Action
+	 * @return WebContainer
+	 */
+	@Route{ "uri": "/admin/phpinfo/", "name": "app.admin.phpinfo" }
+	@RouteMiddleware{ "value": "Runtime.Web.Auth.AuthFrontend::checkAuthMiddleware" }
+	static async RenderContainer adminerInfoPage(RenderContainer container)
+	{
+		string content = "";
+		
+		#ifcode PHP then
+		@ob_start();
+		phpinfo();
+		$content = ob_get_contents();
+		@ob_end_clean();
+		#endif
+		
+		container <= response <= new Response{ "content": content };
+		
+		return [ container ];
+	}
+	
+	
+	
+	/**
+	 * Route Action
+	 * @return WebContainer
+	 */
+	@Route{ "uri": "/admin/database/{version}/", "name": "app.admin.database.version" }
+	@RouteMiddleware{ "value": "Runtime.Web.Auth.AuthFrontend::checkAuthMiddleware" }
+	static async RenderContainer adminerVersionPage(RenderContainer container)
+	{
+		string content = "";
+		string version = container.route_params.get("version", "");
+		
+		#ifcode PHP then
+		$file_path = \Runtime\rtl::getModulePath($ctx, "Bayrell.CloudOS.Installer") . "/data/adminer-4.7.6.php";
+		@ob_start();
+		include $file_path;
+		$content = ob_get_contents();
+		@ob_end_clean();
+		#endif
+		
+		container <= response <= new Response{ "content": content };
+		
+		return [ container ];
+	}
+	
+	
+	#endif
+}
