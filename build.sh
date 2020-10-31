@@ -11,17 +11,17 @@ TAG=`date '+%Y%m%d_%H%M%S'`
 case "$1" in
 	
 	build)
-		docker build ./ -t bayrell/cloud_os_installer:$VERSION-$TAG --file docker/cloud_os_installer.dockerfile
+		docker build ./ -t bayrell/cloud_os_installer:$VERSION-$TAG --file Dockerfile
 		cd ..
 	;;
 	
 	amd64)
-		docker build ./ -t bayrell/cloud_os_installer:$VERSION-amd64 --file docker/cloud_os_installer.dockerfile --build-arg ARCH=-amd64
+		docker build ./ -t bayrell/cloud_os_installer:$VERSION-amd64 --file Dockerfile --build-arg ARCH=-amd64
 		docker push bayrell/cloud_os_installer:$VERSION-amd64
 	;;
 	
 	arm32v7)
-		docker build ./ -t bayrell/cloud_os_installer:$VERSION-arm32v7 --file docker/cloud_os_installer.dockerfile --build-arg ARCH=-arm32v7
+		docker build ./ -t bayrell/cloud_os_installer:$VERSION-arm32v7 --file Dockerfile --build-arg ARCH=-arm32v7
 		docker push bayrell/cloud_os_installer:$VERSION-arm32v7
 	;;
 	
