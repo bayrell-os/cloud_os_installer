@@ -1,4 +1,5 @@
-FROM bayrell/alpine_php_fpm:7.3
+ARG ARCH=
+FROM bayrell/alpine_php_fpm:7.3-1${ARCH}
 
 ADD files /src/files
 RUN cd ~; \
